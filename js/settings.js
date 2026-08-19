@@ -1,0 +1,3 @@
+(function () {
+  var U = FPPUI; U.mountShell({ menu: "main", active: "" }); var app = U.qs("#settingsApp"); app.innerHTML = '<div class="container"><div class="box"><div class="box-head"><h1 class="box-title">설정</h1></div><div class="settings-list"><button data-a="noti"><span>알림 설정</span><span>›</span></button><button data-a="theme"><span>테마 변경</span><span>›</span></button><button data-a="icon"><span>앱 아이콘 변경</span><span>›</span></button><button data-a="lang"><span>언어 변경</span><span>›</span></button><button onclick="location.href=\'community.html#patch\'"><span>공지사항</span><span>›</span></button></div></div></div>'; U.qsa("[data-a]", app).forEach(function (b) { b.onclick = function () { U.openSetting(b.dataset.a); }; });
+})();
