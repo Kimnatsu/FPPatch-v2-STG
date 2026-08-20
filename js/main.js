@@ -24,9 +24,37 @@
   }
 
   function setActiveMenu(page) {
-    qsa(".mainmenu a, .tabbar a").forEach(function (a) {
-      var key = (a.getAttribute("href") || "").split("#")[1] || "";
-      a.classList.toggle("active", key.split("?")[0] === page);
+    qsa(".mainmenu a, .tabbar a, .drawer-panel a").forEach(function (a) {
+      var key = a.getAttribute("data-key") || "";
+      a.classList.toggle("active", key === page);
+    });
+  }
+
+  /* ---------- 날짜 유틸 ---------- */
+  function dayKey(d) {
+    if (!d) return "";
+    var dt = d instanceof Date ? d : new Date(d);
+    if (isNaN(dt.getTime())) return "";
+    return (
+      dt.getFullYear() +
+      "-" +
+      String(dt.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(dt.getDate()).padStart(2, "0")
+    );
+  }
+  function patchDates(list) {
+    var seen = {};
+    list.forEach(function (p) {
+      var k = dayKey(p.date);
+      if (k) seen[k] = 1;
+    });
+    return Object.keys(seen).sort().reverse();
+  }
+  function filterByDate(list, key) {
+    if (!key) return list;
+    return list.filter(function (p) {
+      return dayKey(p.date) === key;
     });
   }
 
@@ -98,6 +126,8 @@
     pvpBody.innerHTML = U.loading();
     D.pvpPatches()
       .then(function (list) {
+        var dates = patchDates(list);
+        if (dates.length) list = filterByDate(list, dates[0]);
         var max = U.isMobile() ? 8 : 12;
         list = list.slice(0, max);
         if (!list.length) {
@@ -489,7 +519,11 @@
     U.renderPageBanner(bannerNode, "PVP PATCH", "버프 · 너프 · 기능수정 밸런스 패치 현황");
     app.innerHTML = "";
     var wrap = el(
-      '<div class="container"><div class="home-grid" id="pvpBoxes" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div></div>'
+      '<div class="container">' +
+        '<div class="pvp-toolbar"><div class="date-filter"><button type="button" class="date-filter-btn" aria-haspopup="listbox" aria-expanded="false"><span class="date-filter-label">날짜 전체</span>' +
+        U.icons.chevron +
+        '</button><div class="date-filter-menu" role="listbox" hidden></div></div></div>' +
+        '<div class="home-grid" id="pvpBoxes" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div></div>'
     );
     app.appendChild(wrap);
     var boxes = qs("#pvpBoxes", wrap);
@@ -513,36 +547,77 @@
       boxes.appendChild(box);
     });
 
+    function renderList(list) {
+      types.forEach(function (t) {
+        var rows = list.filter(function (p) {
+          return p.type === t[0];
+        });
+        var node = bodies[t[0]];
+        if (!rows.length) {
+          node.innerHTML = U.empty(t[1] + " 패치가 없습니다");
+          return;
+        }
+        node.innerHTML = "";
+        var lst = el('<div class="list"></div>');
+        rows.forEach(function (p) {
+          var row = el(
+            '<button class="list-row"><div class="list-row-main"><div class="row-line1">' +
+              '<span class="badge badge-' + p.type + '">' + D.patchTypeLabel(p.type) + '</span><span class="row-title">' +
+              esc(p.name || "-") + "</span></div>" +
+              '<div class="row-line2"><span>' + esc(D.stripHtml(p.desc).slice(0, 60) || "상세 보기") + "</span></div></div>" +
+              (p.date ? '<span class="badge">' + esc(D.fmtDate(p.date)) + "</span>" : "<span></span>") +
+              "</button>"
+          );
+          row.addEventListener("click", function () {
+            if (p.char) openCharPanel(p.char);
+            else U.toast("연결된 캐릭터 정보가 없습니다.");
+          });
+          lst.appendChild(row);
+        });
+        node.appendChild(lst);
+      });
+    }
+
+    function buildDateFilter(dates, selected) {
+      var box = qs(".date-filter", wrap);
+      if (!dates.length) {
+        qs(".pvp-toolbar", wrap).classList.add("hidden");
+        return;
+      }
+      var btn = qs(".date-filter-btn", box);
+      var menu = qs(".date-filter-menu", box);
+      qs(".date-filter-label", btn).textContent = selected || "날짜 선택";
+      menu.innerHTML = "";
+      dates.forEach(function (dk) {
+        var it = el(
+          '<button type="button" class="date-filter-item' + (dk === selected ? " active" : "") + '" role="option">' + esc(dk) + "</button>"
+        );
+        it.addEventListener("click", function () {
+          menu.hidden = true;
+          btn.setAttribute("aria-expanded", "false");
+          location.hash = "pvp?date=" + encodeURIComponent(dk);
+        });
+        menu.appendChild(it);
+      });
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        menu.hidden = !menu.hidden;
+        btn.setAttribute("aria-expanded", String(!menu.hidden));
+      });
+      document.addEventListener("click", function (e) {
+        if (!menu.hidden && !box.contains(e.target)) {
+          menu.hidden = true;
+          btn.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
     D.pvpPatches()
       .then(function (list) {
-        types.forEach(function (t) {
-          var rows = list.filter(function (p) {
-            return p.type === t[0];
-          });
-          var node = bodies[t[0]];
-          if (!rows.length) {
-            node.innerHTML = U.empty(t[1] + " 패치가 없습니다");
-            return;
-          }
-          node.innerHTML = "";
-          var lst = el('<div class="list"></div>');
-          rows.forEach(function (p) {
-            var row = el(
-              '<button class="list-row"><div class="list-row-main"><div class="row-line1">' +
-                '<span class="badge badge-' + p.type + '">' + D.patchTypeLabel(p.type) + '</span><span class="row-title">' +
-                esc(p.name || "-") + "</span></div>" +
-                '<div class="row-line2"><span>' + esc(D.stripHtml(p.desc).slice(0, 60) || "상세 보기") + "</span></div></div>" +
-                (p.date ? '<span class="badge">' + esc(D.fmtDate(p.date)) + "</span>" : "<span></span>") +
-                "</button>"
-            );
-            row.addEventListener("click", function () {
-              if (p.char) openCharPanel(p.char);
-              else U.toast("연결된 캐릭터 정보가 없습니다.");
-            });
-            lst.appendChild(row);
-          });
-          node.appendChild(lst);
-        });
+        var dates = patchDates(list);
+        var selected = params.date && dates.indexOf(params.date) > -1 ? params.date : dates[0] || "";
+        buildDateFilter(dates, selected);
+        renderList(filterByDate(list, selected));
         if (params.char) {
           var hit = list.filter(function (p) {
             return p.char && (String(p.char.docId) === String(params.char) || String(p.char.id) === String(params.char));
