@@ -255,16 +255,41 @@
         return fetchFirst(COLL.pvp)
           .then(function (rows) {
             if (rows.length) {
-              return rows.map(function (r) {
-                return {
+              var out = [];
+              rows.forEach(function (r) {
+                if (pick(r, ["visible"], true) === false) return;
+                var base = {
                   charId: pick(r, ["charId", "characterId", "id"], r.__id),
                   name: pick(r, ["charName", "name", "character"], ""),
                   image: pick(r, ["imageUrl", "image", "icon", "thumbnail"], ""),
+                  date: toDate(pick(r, ["patchDate", "date", "patchedAt", "createdAt", "updatedAt"], null)),
+                };
+                var items = pick(r, ["patches", "items", "changes"], null);
+                if (items && items.length) {
+                  items.forEach(function (p) {
+                    if (!p) return;
+                    var text = typeof p === "string" ? p : pick(p, ["text", "desc", "content", "description", "detail"], "");
+                    out.push({
+                      charId: base.charId,
+                      name: base.name,
+                      image: base.image,
+                      type: API.patchType(typeof p === "string" ? p : pick(p, ["type", "patchType", "kind", "change"], text)),
+                      desc: text,
+                      date: toDate(typeof p === "string" ? null : pick(p, ["patchDate", "date"], null)) || base.date,
+                    });
+                  });
+                  return;
+                }
+                out.push({
+                  charId: base.charId,
+                  name: base.name,
+                  image: base.image,
                   type: API.patchType(pick(r, ["patchType", "type", "kind", "change"], "")),
                   desc: pick(r, ["desc", "content", "description", "detail"], ""),
-                  date: toDate(pick(r, ["createdAt", "date", "patchedAt", "updatedAt"], null)),
-                };
+                  date: base.date,
+                });
               });
+              return out;
             }
             return null;
           })
