@@ -143,13 +143,25 @@
   }
 
   /* ---------- 배너 ---------- */
+  var bannerSeq = 0;
+  var bannerTimer = null;
+  function beginBanner(node) {
+    bannerSeq += 1;
+    if (bannerTimer) {
+      clearInterval(bannerTimer);
+      bannerTimer = null;
+    }
+    node.classList.add("banner");
+    return bannerSeq;
+  }
   function renderBanner(node, page) {
     if (!node) return;
-    node.classList.add("banner");
+    var token = beginBanner(node);
     node.innerHTML = '<div class="banner-fallback">FPP v2</div>';
     if (page === null) return; // 페이지 전용 배너(파이어베이스 미사용)
     FPPData.banners(page)
       .then(function (list) {
+        if (token !== bannerSeq) return; // 다른 페이지로 이동함
         if (!list.length) return;
         var track = el('<div class="banner-track"></div>');
         list.forEach(function (b) {
@@ -183,7 +195,7 @@
               b.classList.toggle("active", bi === idx);
             });
           }
-          setInterval(function () {
+          bannerTimer = setInterval(function () {
             go(idx + 1);
           }, 5000);
         }
@@ -194,7 +206,7 @@
   /* 페이지 전용(고정) 배너 */
   function renderPageBanner(node, title, sub) {
     if (!node) return;
-    node.classList.add("banner");
+    beginBanner(node);
     node.innerHTML =
       '<div class="banner-fallback" style="flex-direction:column;gap:8px;text-align:center;padding:0 18px">' +
       '<div style="font-size:26px;color:var(--brand);letter-spacing:.24em">' +
@@ -244,7 +256,7 @@
     var nav = el('<nav class="mainmenu"><div class="container mainmenu-inner"></div></nav>');
     var navInner = qs(".mainmenu-inner", nav);
     menu.forEach(function (m) {
-      var a = el('<a href="' + m.href + '"' + (m.key === opts.active ? ' class="active"' : "") + ">" + esc(m.label) + "</a>");
+      var a = el('<a href="' + m.href + '" data-key="' + m.key + '"' + (m.key === opts.active ? ' class="active"' : "") + ">" + esc(m.label) + "</a>");
       navInner.appendChild(a);
     });
 
@@ -253,7 +265,7 @@
     tabs.forEach(function (m) {
       tabInner.appendChild(
         el(
-          '<a href="' + m.href + '"' + (m.key === opts.active ? ' class="active"' : "") + ">" +
+          '<a href="' + m.href + '" data-key="' + m.key + '"' + (m.key === opts.active ? ' class="active"' : "") + ">" +
             ICONS[m.icon] +
             "<span>" + esc(m.label) + "</span></a>"
         )
@@ -272,7 +284,7 @@
       panel.appendChild(el('<div class="popover-title" style="font-size:16px">메뉴</div>'));
       MAIN_MENU.concat(opts.menu === "community" ? COMMUNITY_MENU.slice(0, 4) : []).forEach(function (m) {
         panel.appendChild(
-          el('<a href="' + m.href + '"' + (m.key === opts.active ? ' class="active"' : "") + ">" + esc(m.label) + "</a>")
+          el('<a href="' + m.href + '" data-key="' + m.key + '"' + (m.key === opts.active ? ' class="active"' : "") + ">" + esc(m.label) + "</a>")
         );
       });
       drawer.addEventListener("click", function (e) {
