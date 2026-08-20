@@ -414,7 +414,7 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--gap);
-  align-items: stretch;
+  align-items: start;
 }
 .home-grid > .box {
   min-height: 320px;
@@ -683,10 +683,6 @@ button {
 }
 .filter-row.right {
   justify-content: flex-end;
-}
-.support-mode #fElement,
-.support-mode #fType {
-  display: none;
 }
 select,
 input[type="text"],
@@ -1371,9 +1367,7 @@ input::placeholder {
     grid-template-columns: 1fr;
   }
   .home-grid.no-event .box-patch {
-    grid-row: auto !important;
-    grid-column: auto;
-    align-self: start;
+    grid-row: auto;
   }
   .home-grid > .box {
     min-height: 0;

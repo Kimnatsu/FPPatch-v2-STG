@@ -24,15 +24,9 @@
   }
 
   function setActiveMenu(page) {
-    var isCommunityPage = /\/community\.html$/.test(location.pathname);
     qsa(".mainmenu a, .tabbar a").forEach(function (a) {
-      var href = a.getAttribute("href") || "";
-      var key = href.split("#")[1] || "";
-      var isCommunityLink = href.indexOf("community.html") !== -1;
-      a.classList.toggle(
-        "active",
-        key.split("?")[0] === page && isCommunityLink === isCommunityPage
-      );
+      var key = (a.getAttribute("href") || "").split("#")[1] || "";
+      a.classList.toggle("active", key.split("?")[0] === page);
     });
   }
 
@@ -89,15 +83,15 @@
         if (!live.length) {
           boxEvent.classList.add("hidden");
           g.classList.add("no-event");
-          loadPatches(patchBody, U.isMobile() ? 5 : 11);
+          loadPatches(patchBody, U.isMobile() ? 5 : 10);
           return;
         }
-        loadPatches(patchBody, U.isMobile() ? 5 : 11);
+        loadPatches(patchBody, 5);
         renderEventRolling(eventBody, live);
       })
       .catch(function (e) {
         eventBody.innerHTML = U.failed(e);
-        loadPatches(patchBody, U.isMobile() ? 5 : 11);
+        loadPatches(patchBody, 5);
       });
 
     /* PvP */
@@ -274,7 +268,6 @@
         '<div id="charList"></div></div>'
     );
     app.appendChild(wrap);
-    wrap.classList.toggle("support-mode", charState.tab === "support");
 
     /* SM/XS: 필터 2열 분리 */
     function layoutFilters() {
@@ -301,7 +294,6 @@
       b.classList.toggle("active", b.dataset.t === charState.tab);
       b.addEventListener("click", function () {
         charState.tab = b.dataset.t;
-        wrap.classList.toggle("support-mode", charState.tab === "support");
         qsa(".tabs button", wrap).forEach(function (x) {
           x.classList.toggle("active", x === b);
         });
