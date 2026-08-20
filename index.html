@@ -1,0 +1,277 @@
+--- index.html (原始)
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>coder-app-name</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* 内联样式确保主题色立即生效，避免闪烁 */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+      html.light,
+      html.light body {
+        background-color: #ffffff !important;
+        color: #000000;
+      }
+      html.dark,
+      html.dark body {
+        background-color: #1a1a1a !important;
+        color: #ffffff;
+      }
+    </style>
+    <script>
+      // 在 React 加载前立即设置主题，避免闪烁
+      (function () {
+        const isInIframe = window.self !== window.top;
+
+        function applyThemeToDOM(theme) {
+          document.documentElement.classList.remove("light", "dark");
+          document.documentElement.classList.add(theme);
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+
+        if (isInIframe) {
+          // 监听父窗口主动推送的主题消息
+          window.addEventListener("message", function (event) {
+            if (event.data && typeof event.data.theme === "string") {
+              const theme = event.data.theme;
+              if (theme === "light" || theme === "dark") {
+                applyThemeToDOM(theme);
+              }
+            }
+          });
+        } else {
+          // 非 iframe 环境，使用默认 light 主题
+          applyThemeToDOM("light");
+        }
+      })();
+    </script>
+      <script>
+      (function () {
+        if (window.self === window.top) return;
+        var reported = {};
+        window.addEventListener("error", function (event) {
+          // 资源加载失败的 error 事件没有 message，此处仅上报 JS 运行时错误
+          if (!event || !event.message) return;
+          var key =
+            event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
+          if (reported[key]) return; // 相同错误只上报一次，避免渲染循环刷屏
+          reported[key] = true;
+          try {
+            window.parent.postMessage(
+              {
+                type: "sandbox-runtime-error",
+                payload: {
+                  message: String(event.message).slice(0, 500),
+                  filename: event.filename || "",
+                  lineno: event.lineno || 0,
+                  colno: event.colno || 0,
+                  stack:
+                    event.error && event.error.stack
+                      ? String(event.error.stack).slice(0, 2000)
+                      : ""
+                }
+              },
+              "*"
+            );
+          } catch (e) {
+            /* 上报失败不影响页面运行 */
+          }
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
++++ index.html (修改后)
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>FPP v2 — 원피스 파이팅패스 커뮤니티</title>
+<meta name="description" content="FPP v2 — 캐릭터 DB, PvP 패치, 패치노트, 이벤트, 커뮤니티를 한 곳에서." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<script>
+/* 테마 선적용 (FOUC 방지) */
+(function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<link rel="stylesheet" href="/css/common.css" />
+<link rel="stylesheet" href="/css/Main.css" />
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body data-page="main">
+
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- ===== 공통 헤더 (common.js 렌더) ===== -->
+<header id="appHeader" class="app-header"></header>
+<nav id="desktopNav" class="desk-nav" aria-label="주 메뉴"></nav>
+
+<!-- ===== 모바일 드로어 ===== -->
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+<aside class="drawer" id="navDrawer" aria-label="전체 메뉴" aria-hidden="true"></aside>
+
+<main id="view">
+
+  <!-- ================= HOME ================= -->
+  <section class="page" id="view-home" hidden>
+    <div class="banner banner--home" id="homeBanner" aria-label="홈 배너">
+      <div class="banner-fallback" aria-hidden="true"></div>
+      <div class="banner-media" id="homeBannerMedia"></div>
+      <div class="banner-dots" id="homeBannerDots"></div>
+    </div>
+    <div class="ticker" id="homeTicker" aria-hidden="true"></div>
+
+    <div class="wrap home-grid" id="homeGrid">
+      <!-- 패치노트 Box -->
+      <article class="box box--patchnote rv" id="boxPatchnote">
+        <div class="box-head">
+          <h2 class="box-title" data-i18n="patchnote">패치노트</h2>
+          <a class="box-go" href="Community.html#patch" data-i18n="shortcut">바로가기</a>
+        </div>
+        <div class="box-body" id="homePatchList"></div>
+      </article>
+
+      <!-- PvP 패치 Box -->
+      <article class="box box--pvp rv" id="boxPvp">
+        <div class="box-head">
+          <h2 class="box-title">PvP 패치</h2>
+          <button class="box-go" type="button" id="goPvpPage" data-i18n="shortcut">바로가기</button>
+        </div>
+        <div class="box-body pvp-orbs" id="homePvpGrid"></div>
+      </article>
+
+      <!-- 이벤트 Box -->
+      <article class="box box--event rv" id="boxEvent">
+        <div class="box-head">
+          <h2 class="box-title" data-i18n="event">이벤트</h2>
+          <a class="box-go" href="Community.html#event" data-i18n="shortcut">바로가기</a>
+        </div>
+        <div class="box-body event-roll" id="homeEventRoll"></div>
+      </article>
+
+      <!-- 커뮤니티 Box -->
+      <article class="box box--board rv" id="boxBoard">
+        <div class="box-head">
+          <h2 class="box-title" data-i18n="community">커뮤니티</h2>
+          <a class="box-go" href="Community.html#board" data-i18n="shortcut">바로가기</a>
+        </div>
+        <div class="box-body" id="homeBoardList"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= CHARACTERS ================= -->
+  <section class="page" id="view-characters" hidden>
+    <div class="banner banner--page" id="charBanner" aria-label="캐릭터 배너">
+      <div class="banner-fallback banner-fallback--char" aria-hidden="true"></div>
+      <div class="banner-media" id="charBannerMedia"></div>
+      <div class="banner-tag"><span class="banner-tag-txt" data-i18n="charDb">캐릭터 DB</span></div>
+    </div>
+
+    <div class="wrap">
+      <div class="char-tabs rv" role="tablist" aria-label="캐릭터 탭">
+        <button class="char-tab is-on" role="tab" aria-selected="true" data-tab="char" id="tabChar" data-i18n="char">캐릭터</button>
+        <button class="char-tab" role="tab" aria-selected="false" data-tab="support" id="tabSupport" data-i18n="supportChar">현질 서폿 캐릭터</button>
+      </div>
+
+      <div class="filters rv" id="charFilters">
+        <div class="filter-row">
+          <label class="sel"><span class="sel-lb" data-i18n="grade">등급</span>
+            <select id="fGrade" aria-label="등급 필터"></select></label>
+          <label class="sel"><span class="sel-lb" data-i18n="attr">속성</span>
+            <select id="fAttr" aria-label="속성 필터"></select></label>
+          <label class="sel"><span class="sel-lb" data-i18n="type">타입</span>
+            <select id="fType" aria-label="타입 필터"></select></label>
+          <label class="sel"><span class="sel-lb" data-i18n="sort">정렬</span>
+            <select id="fSort" aria-label="정렬">
+              <option value="id">ID순</option>
+              <option value="name">이름순</option>
+              <option value="newest">최신순</option>
+            </select></label>
+        </div>
+        <div class="filter-row">
+          <button class="fbtn fbtn--fav" id="fFav" aria-pressed="false" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.4l-5.8 3 1.1-6.4L2.6 9.4l6.5-.9z"/></svg>
+            <span data-i18n="favorite">즐겨찾기</span>
+          </button>
+          <label class="search f-grow">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input id="fSearch" type="search" placeholder="캐릭터 검색" aria-label="캐릭터 검색" />
+          </label>
+          <button class="fbtn" id="fReset" type="button" aria-label="필터 새로고침">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span data-i18n="refresh">새로고침</span>
+          </button>
+        </div>
+      </div>
+
+      <p class="result-count" id="charCount" aria-live="polite"></p>
+      <div class="char-grid" id="charGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= PVP PATCH ================= -->
+  <section class="page" id="view-pvp" hidden>
+    <div class="banner banner--page" id="pvpBanner" aria-label="PvP 패치 배너">
+      <div class="banner-fallback banner-fallback--pvp" aria-hidden="true"></div>
+      <div class="banner-media" id="pvpBannerMedia"></div>
+      <div class="banner-tag"><span class="banner-tag-txt">PvP PATCH</span></div>
+    </div>
+    <div class="wrap pvp-cols" id="pvpCols">
+      <section class="pvp-col rv" data-kind="buff" aria-label="버프 목록">
+        <h2 class="pvp-col-head pvp-col-head--buff"><span class="pvp-dot"></span>버프 <em id="cntBuff">0</em></h2>
+        <div class="pvp-list" id="pvpBuff"></div>
+      </section>
+      <section class="pvp-col rv" data-kind="nerf" aria-label="너프 목록">
+        <h2 class="pvp-col-head pvp-col-head--nerf"><span class="pvp-dot"></span>너프 <em id="cntNerf">0</em></h2>
+        <div class="pvp-list" id="pvpNerf"></div>
+      </section>
+      <section class="pvp-col rv" data-kind="fix" aria-label="기능수정 목록">
+        <h2 class="pvp-col-head pvp-col-head--fix"><span class="pvp-dot"></span>기능수정 <em id="cntFix">0</em></h2>
+        <div class="pvp-list" id="pvpFix"></div>
+      </section>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="wrap foot-in">
+    <span class="foot-logo">FPP</span>
+    <p>FPP v2 — 팬 커뮤니티 · 본 사이트는 비공식 팬 프로젝트입니다.</p>
+    <p class="foot-sub">데이터는 기존 Firebase 프로젝트(fighting-path-patch)에서 실시간으로 불러옵니다.</p>
+  </div>
+</footer>
+
+<!-- 하단 탭 (SM/XS, common.js 렌더) -->
+<nav id="bottomTabs" class="bottom-tabs" aria-label="하단 메뉴"></nav>
+
+<div id="popupRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script src="/js/Firebase.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/Main.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+--- public/Setting.html (原始)
+
+
++++ public/Setting.html (修改后)
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>설정 — FPP v2</title>
+<meta name="description" content="FPP v2 설정" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<script>
+(function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<link rel="stylesheet" href="/css/common.css" />
+<link rel="stylesheet" href="/css/Setting.css" />
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body data-page="setting">
+
+<div class="ambient" aria-hidden="true"></div>
+
+<header id="appHeader" class="app-header"></header>
+<nav id="desktopNav" class="desk-nav" aria-label="주 메뉴"></nav>
+
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+<aside class="drawer" id="navDrawer" aria-label="전체 메뉴" aria-hidden="true"></aside>
+
+<main id="view">
+  <section class="page" id="view-setting">
+    <div class="wrap setting-wrap">
+      <div class="setting-head rv">
+        <h1 class="setting-title">설정</h1>
+        <p class="setting-sub">앱 환경을 내 항해 스타일에 맞게 조절하세요.</p>
+      </div>
+
+      <div class="set-list rv" id="setList">
+        <button class="set-item" data-set="notice" type="button">
+          <span class="set-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5M9 12h7M9 16h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="set-tx"><strong>공지사항</strong><small>관리자가 등록한 최신 공지</small></span>
+          <span class="set-ar" aria-hidden="true">›</span>
+        </button>
+        <button class="set-item" data-set="alarm" type="button">
+          <span class="set-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+          <span class="set-tx"><strong>알림 설정</strong><small>패치노트 · 즐겨찾기 · 이벤트 · 댓글</small></span>
+          <span class="set-ar" aria-hidden="true">›</span>
+        </button>
+        <button class="set-item" data-set="theme" type="button">
+          <span class="set-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></span>
+          <span class="set-tx"><strong>테마 변경</strong><small>다크 / 라이트 즉시 적용</small></span>
+          <span class="set-ar" aria-hidden="true">›</span>
+        </button>
+        <button class="set-item" data-set="icon" type="button">
+          <span class="set-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 13l2 2 4-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="set-tx"><strong>앱 아이콘 변경</strong><small>바탕화면 바로가기 아이콘 선택</small></span>
+          <span class="set-ar" aria-hidden="true">›</span>
+        </button>
+        <button class="set-item" data-set="lang" type="button">
+          <span class="set-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>
+          <span class="set-tx"><strong>언어 변경</strong><small>한국어 / English</small></span>
+          <span class="set-ar" aria-hidden="true">›</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <div class="wrap foot-in">
+    <span class="foot-logo">FPP</span>
+    <p>FPP v2 — 팬 커뮤니티 · 본 사이트는 비공식 팬 프로젝트입니다.</p>
+  </div>
+</footer>
+
+<nav id="bottomTabs" class="bottom-tabs" aria-label="하단 메뉴"></nav>
+
+<div id="popupRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script src="/js/Firebase.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/Setting.js"></script>
+</body>
+</html>

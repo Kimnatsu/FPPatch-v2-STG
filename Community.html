@@ -1,0 +1,162 @@
+--- public/Community.html (原始)
+
+
++++ public/Community.html (修改后)
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>커뮤니티 — FPP v2</title>
+<meta name="description" content="FPP v2 커뮤니티 — 패치노트, 게시판, 이벤트" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<script>
+(function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<link rel="stylesheet" href="/css/common.css" />
+<link rel="stylesheet" href="/css/Community.css" />
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body data-page="community">
+
+<div class="ambient" aria-hidden="true"></div>
+
+<header id="appHeader" class="app-header"></header>
+<nav id="desktopNav" class="desk-nav" aria-label="커뮤니티 메뉴"></nav>
+
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+<aside class="drawer" id="navDrawer" aria-label="전체 메뉴" aria-hidden="true"></aside>
+
+<main id="view">
+
+  <!-- ============ 커뮤니티 홈 ============ -->
+  <section class="page" id="view-comhome" hidden>
+    <div class="banner banner--page" aria-label="커뮤니티 배너">
+      <div class="banner-fallback banner-fallback--comm" aria-hidden="true"></div>
+      <div class="banner-media" id="commBannerMedia"></div>
+      <div class="banner-tag"><span class="banner-tag-txt">COMMUNITY</span></div>
+    </div>
+    <div class="wrap com-stack">
+      <article class="box rv">
+        <div class="box-head"><h2 class="box-title" data-i18n="patchnote">패치노트</h2>
+          <button class="box-go" type="button" data-go="patch" data-i18n="shortcut">바로가기</button></div>
+        <div class="box-body" id="comPatchList"></div>
+      </article>
+      <article class="box rv">
+        <div class="box-head"><h2 class="box-title" data-i18n="board">게시판</h2>
+          <button class="box-go" type="button" data-go="board" data-i18n="shortcut">바로가기</button></div>
+        <div class="box-body" id="comBoardList"></div>
+      </article>
+      <article class="box rv">
+        <div class="box-head"><h2 class="box-title" data-i18n="event">이벤트</h2>
+          <button class="box-go" type="button" data-go="event" data-i18n="shortcut">바로가기</button></div>
+        <div class="box-body" id="comEventList"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 패치노트 ============ -->
+  <section class="page" id="view-patch" hidden>
+    <div class="banner banner--page" aria-label="패치노트 배너">
+      <div class="banner-fallback banner-fallback--patch" aria-hidden="true"></div>
+      <div class="banner-media" id="patchBannerMedia"></div>
+      <div class="banner-tag"><span class="banner-tag-txt">PATCH NOTES</span></div>
+    </div>
+    <div class="wrap patch-layout">
+      <div class="patch-content" id="patchContent"><!-- 목록 또는 상세 --></div>
+      <aside class="month-filter rv" id="monthFilter" aria-label="월별 필터"><h3 class="month-title">월별 보기</h3><div id="monthList"></div></aside>
+    </div>
+  </section>
+
+  <!-- ============ 게시판 ============ -->
+  <section class="page" id="view-board" hidden>
+    <div class="banner banner--page" aria-label="게시판 배너">
+      <div class="banner-fallback banner-fallback--board" aria-hidden="true"></div>
+      <div class="banner-media" id="boardBannerMedia"></div>
+      <div class="banner-tag"><span class="banner-tag-txt">BOARD</span></div>
+    </div>
+    <div class="wrap">
+      <div class="board-toolbar rv" id="boardToolbar">
+        <div class="cat-chips" id="boardCats" role="tablist" aria-label="게시판 카테고리">
+          <button class="chip is-on" data-cat="all" type="button">전체</button>
+          <button class="chip" data-cat="자유" type="button">자유</button>
+          <button class="chip" data-cat="정보" type="button">정보</button>
+          <button class="chip" data-cat="질문" type="button">질문</button>
+          <button class="chip" data-cat="자랑" type="button">자랑</button>
+        </div>
+        <div class="tool-right">
+          <div class="seg" role="group" aria-label="보기 방식">
+            <button class="seg-btn" data-view="card" type="button" aria-label="카드형">
+              <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>카드형</button>
+            <button class="seg-btn is-on" data-view="list" type="button" aria-label="목록형">
+              <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>목록형</button>
+          </div>
+          <label class="sel sel--sm"><span class="sel-lb">정렬</span>
+            <select id="boardSort" aria-label="게시판 정렬">
+              <option value="new">최근등록순</option>
+              <option value="like">좋아요순</option>
+              <option value="old">오래된순</option>
+            </select></label>
+        </div>
+      </div>
+      <div id="boardContent"><!-- 목록 또는 상세 --></div>
+    </div>
+  </section>
+
+  <!-- ============ 이벤트 ============ -->
+  <section class="page" id="view-event" hidden>
+    <div class="banner banner--page" aria-label="이벤트 배너">
+      <div class="banner-fallback banner-fallback--event" aria-hidden="true"></div>
+      <div class="banner-media" id="eventBannerMedia"></div>
+      <div class="banner-tag"><span class="banner-tag-txt">EVENT</span></div>
+    </div>
+    <div class="wrap">
+      <div class="board-toolbar rv" id="eventToolbar">
+        <div class="cat-chips" id="eventCats" role="tablist" aria-label="이벤트 상태">
+          <button class="chip is-on" data-cat="all" type="button">전체</button>
+          <button class="chip" data-cat="ing" type="button">진행중</button>
+          <button class="chip" data-cat="end" type="button">종료됨</button>
+        </div>
+        <div class="tool-right">
+          <div class="seg" role="group" aria-label="보기 방식">
+            <button class="seg-btn is-on" data-view="card" type="button" aria-label="카드형">
+              <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>카드형</button>
+            <button class="seg-btn" data-view="list" type="button" aria-label="목록형">
+              <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>목록형</button>
+          </div>
+          <label class="sel sel--sm"><span class="sel-lb">정렬</span>
+            <select id="eventSort" aria-label="이벤트 정렬">
+              <option value="new">최근등록순</option>
+              <option value="like">좋아요순</option>
+              <option value="old">오래된순</option>
+            </select></label>
+        </div>
+      </div>
+      <div id="eventContent"><!-- 목록 또는 상세 --></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <div class="wrap foot-in">
+    <span class="foot-logo">FPP</span>
+    <p>FPP v2 — 팬 커뮤니티 · 본 사이트는 비공식 팬 프로젝트입니다.</p>
+    <p class="foot-sub">데이터는 기존 Firebase 프로젝트(fighting-path-patch)에서 실시간으로 불러옵니다.</p>
+  </div>
+</footer>
+
+<nav id="bottomTabs" class="bottom-tabs" aria-label="하단 메뉴"></nav>
+
+<div id="popupRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script src="/js/Firebase.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/Community.js"></script>
+</body>
+</html>
